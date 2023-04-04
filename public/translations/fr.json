@@ -1,0 +1,8 @@
+{
+  "app": {
+    "name": "PR-Zendesk-App",
+    "short_description": "Pilet Renaud SA depuis Zendesk",
+    "long_description": "Accéder aux données depuis Zendesk",
+    "installation_instructions": "Vous aurez juste besoin de spécifier le *token* de sécurité"
+  }
+}

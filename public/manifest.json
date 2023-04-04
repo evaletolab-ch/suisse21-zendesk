@@ -1,0 +1,46 @@
+{
+  "name": "Pilet & Renaud SA",
+  "author": {
+    "name": "Pilet & Renaud SA",
+    "email": "it@pilet-renaud.ch"
+  },
+  "defaultLocale": "fr",
+  "private": true,
+  "singleInstall": true,
+  "location": {
+    "support": {
+      "ticket_sidebar": {
+        "autoHide": false,
+        "flexible": true,
+        "signed": false,
+        "url": "https://zendesk-app.pilet-renaud.ch/",
+        "size": {
+          "height":"600px",
+          "width":"100%"
+        }
+      }    
+    }
+  },
+  "domainWhitelist": [
+    "zendesk-app.pilet-renaud.ch"
+  ],
+  "parameters": [
+    {
+      "name": "token",
+      "type": "text",
+      "required": true
+    },
+    {
+      "name": "field_iid",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "field_refid",
+      "type": "text",
+      "required": false
+    }
+  ],
+  "version": "1.5",
+  "frameworkVersion": "2.0"
+}
