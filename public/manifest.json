@@ -1,8 +1,8 @@
 {
-  "name": "Pilet & Renaud SA",
+  "name": "Suisse21",
   "author": {
-    "name": "Pilet & Renaud SA",
-    "email": "it@pilet-renaud.ch"
+    "name": "Suisse21",
+    "email": "info@suisse21.ch"
   },
   "defaultLocale": "fr",
   "private": true,
@@ -13,7 +13,7 @@
         "autoHide": false,
         "flexible": true,
         "signed": false,
-        "url": "https://zendesk-app.pilet-renaud.ch/",
+        "url": "..",
         "size": {
           "height":"600px",
           "width":"100%"
@@ -22,25 +22,15 @@
     }
   },
   "domainWhitelist": [
-    "zendesk-app.pilet-renaud.ch"
+    "suisse21.ch"
   ],
   "parameters": [
-    {
-      "name": "token",
-      "type": "text",
-      "required": true
-    },
     {
       "name": "field_iid",
       "type": "text",
       "required": false
-    },
-    {
-      "name": "field_refid",
-      "type": "text",
-      "required": false
     }
   ],
-  "version": "1.5",
+  "version": "1.0",
   "frameworkVersion": "2.0"
 }
