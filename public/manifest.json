@@ -1,8 +1,8 @@
 {
-  "name": "Suisse21",
+  "name": "Swiss21",
   "author": {
-    "name": "Suisse21",
-    "email": "info@suisse21.ch"
+    "name": "Swiss21",
+    "email": "info@swiss21.org"
   },
   "defaultLocale": "fr",
   "private": true,
@@ -22,7 +22,7 @@
     }
   },
   "domainWhitelist": [
-    "suisse21.ch"
+    "swiss21.org"
   ],
   "parameters": [
     {

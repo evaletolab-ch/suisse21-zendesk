@@ -27,7 +27,7 @@
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
-import Suisse21Zendesk from './components/Suisse21Zendesk.vue';
+import Swiss21Zendesk from './components/Swiss21Zendesk.vue';
 import IntervenantFinder from './components/IntervenantFinder.vue';
 import CoproFinder from './components/CoproFinder.vue';
 import CoproDisplay from './components/CoproDisplay.vue';
@@ -36,7 +36,7 @@ import { $zendesk, Context } from './services/ZendeskContext';
 
 @Component({
   components: {
-    Suisse21Zendesk,
+    Swiss21Zendesk,
     IntervenantFinder,
     CoproFinder,
     CoproDisplay

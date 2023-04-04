@@ -33,7 +33,7 @@ import MFCoprosLink from './MFCoprosLink.vue';
     MFCoprosLink,
   }
 })
-export default class Suisse21Zendesk extends Vue {
+export default class Swiss21Zendesk extends Vue {
 
   context: Context|any = {};
 
