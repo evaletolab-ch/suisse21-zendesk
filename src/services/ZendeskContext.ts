@@ -26,8 +26,6 @@ export interface Ticket {
   description: string;
   url:string;
   source: string;
-  refFormat: string;
-  intervenantId: string;
   content:string;
 }
 //
@@ -35,7 +33,7 @@ export interface Ticket {
 const client = ZAFClient.init();
 
 class ZendeskContext {
-  ZENDESK_REFFORMAT='ticket.customField:custom_field_8458947622802';
+  ZENDESK_CUSTOM_APP='ticket.customField:custom_field_8458947622802';
   ZENDESK_ORG = 'ticket.organization';
   ZENDESK_ORG_ID = 'ticket.organization_id';
   private version = 1;
@@ -73,7 +71,7 @@ class ZendeskContext {
       const metadata = await client.metadata();
       this.token = metadata.settings.token;
       this.ZENDESK_EXTERNAL_ID = metadata.settings.field_iid || this.ZENDESK_EXTERNAL_ID;
-      this.ZENDESK_REFFORMAT = metadata.settings.field_refid || this.ZENDESK_REFFORMAT;
+      this.ZENDESK_CUSTOM_APP = metadata.settings.field_refid || this.ZENDESK_CUSTOM_APP;
       if(!this.token) {
         throw "Missing M-Files token";
       }      
@@ -90,7 +88,7 @@ class ZendeskContext {
             'ticket.requester.name',
             'ticket.requester.email',
             this.ZENDESK_EXTERNAL_ID,
-            this.ZENDESK_REFFORMAT,
+            this.ZENDESK_CUSTOM_APP,
             this.ZENDESK_ORG
       ]);
       const phone = this.$phone.test(ticket['ticket.requester.name'])?ticket['ticket.requester.name']:'';
@@ -102,7 +100,7 @@ class ZendeskContext {
         email: ticket['ticket.requester.email'],
         phone: phone,
         intervenantId:ticket[this.ZENDESK_EXTERNAL_ID],
-        refFormat:ticket[this.ZENDESK_REFFORMAT],
+        refFormat:ticket[this.ZENDESK_CUSTOM_APP],
         token: this.token
       };
       console.log('--- DBG ZendeskContext client.get()',ticket);
@@ -167,7 +165,7 @@ class ZendeskContext {
       'ticket.subject', 
       'ticket.via.channel',
       'ticket',
-      this.ZENDESK_REFFORMAT,
+      this.ZENDESK_CUSTOM_APP,
       this.ZENDESK_ORG
   ];
 
