@@ -1,53 +1,22 @@
 <template>
   <div id="app">
-    <pilet-zendesk />
-
-    <intervenant-finder       
-      :query="query"
-      :intervenantId="intervenantId" 
-      v-on:intervenantSelected="onIntervenantSelected"/>
-
-    <copro-finder 
-      v-if="intervenant || refFormatee" 
-      :intervenant="intervenant" 
-      :refFormatee="refFormatee"
-      :organization="organization"
-      v-on:coproSelected="onCoproSelected"
-      v-on:onClear="onClear"
-    />
-
-    <copro-display 
-      v-if="refFormatee" 
-      :refFormatee="refFormatee" 
-      :organization="organization"
-    />
-
+    <swiss21-zendesk />
   </div>
 </template>
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
 import Swiss21Zendesk from './components/Swiss21Zendesk.vue';
-import IntervenantFinder from './components/IntervenantFinder.vue';
-import CoproFinder from './components/CoproFinder.vue';
-import CoproDisplay from './components/CoproDisplay.vue';
 import { $zendesk, Context } from './services/ZendeskContext';
 
 
 @Component({
   components: {
-    Swiss21Zendesk,
-    IntervenantFinder,
-    CoproFinder,
-    CoproDisplay
+    Swiss21Zendesk
   },
 })
 export default class App extends Vue {
 
-  intervenantId: string | null = null;
-  intervenant: any = null;
-
-  refFormatee:string | null = null;
 
   query:string | null = null;
 
@@ -60,61 +29,15 @@ export default class App extends Vue {
       //
       // subscribe zendesk context
       // - context version (to compare)
-      // - intervenant: phone, email, iid, référence formatée
       // - ticket content
       $zendesk.observable().subscribe(async (context:Context)=>{
-        $apiService.init(context);
         // reset state
         this.latest = context;
-        this.refFormatee = null; 
-        this.intervenant = null;
-        this.intervenantId = null;
         this.query = null;
-        this.organization = this.organization || context.organization || null;
-        
-        //
-        // state decision process
-        if(context.refFormat){
-          // best outcome, we know the contract ref
-          // we fetch it and display it
-          this.refFormatee = context.refFormat;
-        } else{
-          this.query = context.email || context.phone ||null;
-          this.intervenantId = context.intervenantId||null;
-        }
-
-        console.table([["refFormatee", this.refFormatee], ["intervenant", this.intervenant], ["intervenant id", this.intervenantId], ["query", this.query]]);
+        this.organization = this.organization || context.organization || null;        
       });
   }
 
-  async onIntervenantSelected(intervenant:any){
-    this.intervenant = intervenant;
-    this.query = null;
-    this.intervenantId = null;
-    await $zendesk.saveIntervenant(intervenant.DisplayID);
-  }
-  
-  async onCoproSelected(copro:any){
-    console.log("selected copro", copro);
-    this.refFormatee = copro.IDZendesk;
-
-    if(this.intervenant) {
-      await $zendesk.saveIntervenant(this.intervenant.DisplayID);
-    }
-
-    this.intervenant = null;
-    await $zendesk.saveContrat(this.refFormatee!);
-  }
-
-  async onClear() {
-    this.intervenant = null;
-    this.refFormatee = null;
-    await $zendesk.saveIntervenant(null);
-    await $zendesk.saveContrat(null);
-    if(this.latest){
-      $zendesk.update(this.latest);
-    }
-  }
 }
 </script>
 

@@ -1,8 +1,8 @@
 {
   "app": {
-    "name": "PR-Zendesk-App",
-    "short_description": "Pilet Renaud SA depuis Zendesk",
-    "long_description": "Accéder aux données depuis Zendesk",
-    "installation_instructions": "Vous aurez juste besoin de spécifier le *token* de sécurité"
+    "name": "Swiss21-Zendesk-App",
+    "short_description": "Swiss21 SA ticket fork",
+    "long_description": "Démarrer une nouvelle demande pour l'utilisateur",
+    "installation_instructions": "Plug&Play"
   }
 }

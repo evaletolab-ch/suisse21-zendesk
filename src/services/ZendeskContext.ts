@@ -6,9 +6,6 @@ declare const ZAFClient:any;
 
 export interface Context {
   __v: number;
-  token: string;
-  refFormat?: string;
-  intervenantId?: string;
   uid?: string;
   name?: string;
   phone?: string;
@@ -52,12 +49,6 @@ class ZendeskContext {
     return !!client;
   }
 
-  organizationTicketCheckName(name: string) {
-    if(!this.currentTicketOrganization){
-      return false;
-    }
-    return (this.currentTicketOrganization.name == name);
-  }
 
   
   async load(): Promise<Context> {
@@ -69,13 +60,12 @@ class ZendeskContext {
       //
       // get active token from metadata.settings.token
       const metadata = await client.metadata();
-      this.token = metadata.settings.token;
-      this.ZENDESK_EXTERNAL_ID = metadata.settings.field_iid || this.ZENDESK_EXTERNAL_ID;
+      // this.token = metadata.settings.token;
       this.ZENDESK_CUSTOM_APP = metadata.settings.field_refid || this.ZENDESK_CUSTOM_APP;
-      if(!this.token) {
-        throw "Missing M-Files token";
-      }      
-      console.log('--- DBG ZendeskContext token',this.token);
+      // if(!this.token) {
+      //   throw "Missing M-Files token";
+      // }      
+      // console.log('--- DBG ZendeskContext token',this.token);
 
       //
       // get tocket context
@@ -87,7 +77,6 @@ class ZendeskContext {
             'ticket.requester.id',
             'ticket.requester.name',
             'ticket.requester.email',
-            this.ZENDESK_EXTERNAL_ID,
             this.ZENDESK_CUSTOM_APP,
             this.ZENDESK_ORG
       ]);
@@ -98,10 +87,7 @@ class ZendeskContext {
         name: ticket['ticket.requester.name'],
         description: ticket['ticket.description'],
         email: ticket['ticket.requester.email'],
-        phone: phone,
-        intervenantId:ticket[this.ZENDESK_EXTERNAL_ID],
-        refFormat:ticket[this.ZENDESK_CUSTOM_APP],
-        token: this.token
+        phone: phone
       };
       console.log('--- DBG ZendeskContext client.get()',ticket);
 
@@ -118,23 +104,16 @@ class ZendeskContext {
       // const fields = await client.get('ticketFields');
       // console.log('--DBG fields',JSON.stringify(fields,null,2));
 
-      //
-      // looking for reference formatée
-      if(ticket['ticket.description'] && !context.refFormat) {
-        const id = this.$reference.exec(ticket['ticket.description']);
-        context.refFormat = (id && id.length)? id[0]:'';
-      }
 
       //
       // export ticket
-      client.on('ticket.save', this.saveTicket.bind(this))
+      //client.on('ticket.save', this.saveTicket.bind(this))
 
       //
       // emit context
       return context;
 
     }catch(err:any) {
-      $apiService.sendError(err);
       const error = err.message||err;
       this.showError(err.status,error);
       return {__v:1,error} as Context;      
@@ -153,7 +132,7 @@ class ZendeskContext {
 
   //
   // https://developer.zendesk.com/api-reference/ticketing/tickets/tickets/#json-format
-  async saveTicket(status: any) {
+  async createTicket(status: any) {
     if(!client) {
       throw "Not a zendesk container";
     }
@@ -183,7 +162,7 @@ class ZendeskContext {
 
 
 
-    console.log('----DBG save ticket',ticket);
+    console.log('----DBG create and save ticket',ticket);
     this.update({ ticket } as Context);  
 
   }
