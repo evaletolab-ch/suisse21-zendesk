@@ -26,11 +26,17 @@
   ],
   "parameters": [
     {
-      "name": "field_iid",
+      "name": "field_custom_id",
+      "type": "text",
+      "required": false
+    },
+    {
+      "name": "template_custom_id",
       "type": "text",
       "required": false
     }
+
   ],
-  "version": "1.1",
+  "version": "1.54",
   "frameworkVersion": "2.0"
 }

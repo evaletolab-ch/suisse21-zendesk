@@ -1,0 +1,8 @@
+{
+  "app": {
+    "name": "Swiss21-Zendesk-App",
+    "short_description": "Swiss21 SA ticket fork",
+    "long_description": "Démarrer une nouvelle demande pour l'utilisateur",
+    "installation_instructions": "Plug&Play"
+  }
+}

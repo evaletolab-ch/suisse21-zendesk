@@ -1,18 +1,42 @@
 <template>
   <div class="zendesk">
-    <h3>Créer un ticket à partir de cette position:  <div class="arrow-button">⬇</div></h3>
-    <ul>
-      <li>
-        <input type="text" placeholder="Sujet du nouveau ticket"  @keydown.enter="onSubject"> 
-      </li>
-      <li class="">
-        <button @click="onDuplicate" >Dupliquer</button>
-      </li>
-    </ul>
+    <form>
+      <div class="form-group">
+        <label for="comment">Créer un ticket à partir du commentaire</label>
+        <select id="comment"  class="form-control">
+          <option v-for="(comment,index) in comments" :key="index">
+            {{ comment.plain_body }}
+          </option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="app">Renseigner l'application</label>
+        <select id="app"  class="form-control">
+          <option v-for="(app,index) in apps" :key="index">
+            {{ app }}
+          </option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="">Renseigner le sujet</label>
+        <input type="text" placeholder="Sujet du nouveau ticket" class="form-control" v-model="subject" required aria-describedby="helpBlock"> 
+        <small id="helpBlock" class="form-text text-muted">
+          Minimum 20 caractères
+        </small>
+      </div>
+      <div class="form-group">
+        <button type="button" class="btn btn-primary" @click="onDuplicate" :disabled="!subject">Créer</button>
+      </div>
+    </form>
     
-    <p class="error" :class="{hide:!context.error}">
+    <div class="alert alert-success hide" role="alert">
+      This is a success alert—check it out!
+    </div>
+    <div class="alert alert-danger" role="alert" :class="{hide:!context.error}">
       {{context.error}}
-    </p>
+    </div>    
   </div>
 </template>
 
@@ -27,6 +51,20 @@ import { $zendesk, Context } from '../services/ZendeskContext';
 export default class Swiss21Zendesk extends Vue {
 
   context: Context|any = {};
+  subject = '';
+
+  get apps () {
+    return ['app1','app2','app3']
+  }
+
+  get comments() {
+    const strip = /(<([^>]+)>)/ig;
+    const _comments = this.context.comments && this.context.comments.comments||[];
+    return _comments.map( (comment:any) => {
+      comment.plain_body = (comment.plain_body||'').substring(0,40)+'...';
+      return comment;
+    })
+  }
 
   async mounted() {
     try{
@@ -41,19 +79,10 @@ export default class Swiss21Zendesk extends Vue {
     }
   }
 
-  onSubject(event:any) {
-    try{
-      this.context.error = undefined;
-    }catch(err:any){
-      this.context.error = err.message;
-    }
-  }
-
-
 
 
   async onDuplicate() {
-    throw ('Not implemented')
+    this.context.error = 'Opps: Not yet implemented';
   }
 
 }

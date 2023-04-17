@@ -1,12 +1,12 @@
 {
   "name": "Swiss21-zendesk",
-  "version": "1.0.3",
+  "version": "1.0.54",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
-    "deploy": "pr-zendesk/"
+    "deploy": "rm -rf app-zendesk/*&&cp -a dist/* app-zendesk/&&cd app-zendesk&&mv css js index.html assets;cd ..&&zip -r app-zendesk.zip app-zendesk"
   },
   "dependencies": {
     "axios": "^0.26.1",

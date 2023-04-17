@@ -1,6 +1,9 @@
 .DS_Store
 node_modules
 /dist
+/app-zendesk/assets/js
+/app-zendesk/assets/css
+/app-zendesk/assets/*.html
 /app-zendesk/js
 /app-zendesk/css
 /app-zendesk/*.html

@@ -6,6 +6,7 @@ declare const ZAFClient:any;
 
 export interface Context {
   __v: number;
+  id: number;
   uid?: string;
   name?: string;
   phone?: string;
@@ -13,7 +14,9 @@ export interface Context {
   description?: string;
   error?: string;
   organization?: string;
+  comments?:any[];
   ticket?:any;
+  applications:string[];
 }
 
 //
@@ -30,17 +33,13 @@ export interface Ticket {
 const client = ZAFClient.init();
 
 class ZendeskContext {
-  ZENDESK_CUSTOM_APP='ticket.customField:custom_field_8458947622802';
+  ZENDESK_CUSTOM_APP_SELECT='ticket.customField:custom_field_360004818657';
+  ZENDESK_CUSTOM_TEMPLATE='{{dc.clone_app_text}}';
   ZENDESK_ORG = 'ticket.organization';
   ZENDESK_ORG_ID = 'ticket.organization_id';
   private version = 1;
   private znedesk$ = new ReplaySubject<Context>(1);
   private ticket:Ticket|any = {};
-  private currentRequester = "";
-  private currentTicket = "";
-  private currentTicketOrganization:any = {};
-
-  $reference = new RegExp('([0-9]{6}.?[0-9]{5}.?[0-9]{2})','gm');
 
   // WARNING: the same regexp is used on backend
   $phone = new RegExp(/([0-9]{4}|\+[0-9]{2}|\(0\))?[ /-]?(0?[1-9]{2})\/?.?([0-9]{3}).?([0-9]{2}).?([0-9]{2})/);
@@ -60,16 +59,16 @@ class ZendeskContext {
       //
       // get active token from metadata.settings.token
       const metadata = await client.metadata();
-      // this.token = metadata.settings.token;
-      this.ZENDESK_CUSTOM_APP = metadata.settings.field_refid || this.ZENDESK_CUSTOM_APP;
-      // if(!this.token) {
-      //   throw "Missing M-Files token";
-      // }      
-      // console.log('--- DBG ZendeskContext token',this.token);
+
+      //
+      // Custom field for Swiss21 Applications support
+      // Custom field for message template
+      this.ZENDESK_CUSTOM_APP_SELECT = metadata.settings.field_custom_id || this.ZENDESK_CUSTOM_APP_SELECT;
 
       //
       // get tocket context
-      // custom_field_4835238918685 référence formatée
+      // custom_field_4835238918685 
+      // https://stackoverflow.com/questions/75391573/zendesk-listen-agent-response-event-zaf-client-support-location
       const ticket = await client.get([
             'ticket.id',
             'ticket.description',
@@ -77,37 +76,31 @@ class ZendeskContext {
             'ticket.requester.id',
             'ticket.requester.name',
             'ticket.requester.email',
-            this.ZENDESK_CUSTOM_APP,
+            this.ZENDESK_CUSTOM_APP_SELECT,
             this.ZENDESK_ORG
       ]);
-      const phone = this.$phone.test(ticket['ticket.requester.name'])?ticket['ticket.requester.name']:'';
+
       const context:Context = {
         __v: this.version,
+        id:ticket['ticket.id'],
         uid: ticket['ticket.requester.id'],
         name: ticket['ticket.requester.name'],
         description: ticket['ticket.description'],
         email: ticket['ticket.requester.email'],
-        phone: phone
+        organization: ticket[this.ZENDESK_ORG],
+        applications:ticket[this.ZENDESK_CUSTOM_APP_SELECT],
+        ticket
       };
-      console.log('--- DBG ZendeskContext client.get()',ticket);
-
-      //
-      // keep current requester
-      this.currentRequester = context.uid || "";
-      this.currentTicket = ticket['ticket.id'];
-
-      //
-      // default org is Null
-      this.currentTicketOrganization = ticket[this.ZENDESK_ORG] || {};
-
-      // DEBUG ---
-      // const fields = await client.get('ticketFields');
-      // console.log('--DBG fields',JSON.stringify(fields,null,2));
 
 
       //
-      // export ticket
-      //client.on('ticket.save', this.saveTicket.bind(this))
+      // get associated tickets comments
+      // https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_comments/#list-comments
+      // https://developer.zendesk.com/api-reference/apps/apps-support-api/ticket_sidebar/#comment-object
+      context.comments = await client.request(`/api/v2/tickets/${context.id}/comments?sort_order=desc`);
+
+      console.log('--- DBG ZendeskContext comment',context.comments);
+
 
       //
       // emit context
@@ -116,6 +109,7 @@ class ZendeskContext {
     }catch(err:any) {
       const error = err.message||err;
       this.showError(err.status,error);
+      console.log('----- ERROR',err);
       return {__v:1,error} as Context;      
     }
   }
@@ -144,7 +138,7 @@ class ZendeskContext {
       'ticket.subject', 
       'ticket.via.channel',
       'ticket',
-      this.ZENDESK_CUSTOM_APP,
+      this.ZENDESK_CUSTOM_APP_SELECT,
       this.ZENDESK_ORG
   ];
 
@@ -173,10 +167,10 @@ class ZendeskContext {
       status: (status||400),    
       statusText: message 
     };  
-    const source = $window.$("#error-template").html();  
-    const template = $window.Handlebars.compile(source);  
-    const html = template(error);  
-    $window.$("#content").html(html);
+    // const source = $window.$("#error-template").html();  
+    // const template = $window.Handlebars.compile(source);  
+    // const html = template(error);  
+    // $window.$("#content").html(html);
   }
 
 }
