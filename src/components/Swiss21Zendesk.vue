@@ -58,7 +58,7 @@ export default class Swiss21Zendesk extends Vue {
   }
 
   get comments() {
-    const strip = /(<([^>]+)>)/ig;
+    //const stripHtml = /(<([^>]+)>)/ig;
     const _comments = this.context.comments && this.context.comments.comments||[];
     return _comments.map( (comment:any) => {
       comment.plain_body = (comment.plain_body||'').substring(0,40)+'...';
@@ -82,6 +82,8 @@ export default class Swiss21Zendesk extends Vue {
 
 
   async onDuplicate() {
+    //await this.$nextTick();
+    this.$forceUpdate();
     this.context.error = 'Opps: Not yet implemented';
   }
 
