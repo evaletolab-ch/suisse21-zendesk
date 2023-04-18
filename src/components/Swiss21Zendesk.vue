@@ -104,9 +104,9 @@ export default class Swiss21Zendesk extends Vue {
       setTimeout(()=>this.$forceUpdate(),400);
       console.log('----DBG create and save ticket',this.newticket);
     }catch(err:any) {
-      this.context.error = err.message|err.statusText|err;
+      this.context.error = err.message||err.statusText||err;
+      console.log('----DBG ERROR onDuplicate',this.context.error);
       setTimeout(()=>this.$forceUpdate(),400);
-      console.log('----DBG ERROR onDuplicate',err);
     }
   }
 

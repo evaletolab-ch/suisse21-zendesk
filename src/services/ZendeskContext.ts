@@ -63,8 +63,7 @@ class ZendeskContext {
         'ticket.id',
         'ticket.requester.id',
         'ticket.requester.name',
-        'ticket.requester.email',
-        'ticket.group'
+        'ticket.requester.email'
       ]
       const id = await client.get(elems);
       const content = await client.request('/api/v2/tickets/'+id['ticket.id']);
@@ -80,7 +79,7 @@ class ZendeskContext {
 
       //
       // force group id
-      context.ticket.group_id = context.ticket.group_id || id['ticket.group'];
+      context.ticket.group_id = context.ticket.group_id;
 
       //
       // create requester
@@ -253,13 +252,12 @@ class ZendeskContext {
       return data.ticket;
 
     }catch(err:any){
-      console.log('----DBG createTicket',err);
-      throw err;
+      console.log('----DBG ERROR createTicket',err);
+      throw (this.parseError(err));
     }
 
 
   }
-
 
   //
   // trigger
@@ -270,6 +268,19 @@ class ZendeskContext {
     await client.invoke('routeTo', 'ticket', id);
   }
 
+  parseError(err:any) {
+    if(err.responseJSON && err.responseJSON.description){
+      err.message = err.responseJSON.description;
+
+      Object.keys(err.responseJSON.details).forEach(key=>{        
+        if(!err.responseJSON.details[key] &&!err.responseJSON.details[key][0]){
+          return;
+        }
+        err.message = err.responseJSON.details[key][0].description || err.message;
+      })
+    }
+    return err;
+  }
 }
 
 

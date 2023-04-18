@@ -6,6 +6,8 @@ export class ZendeskContextMock {
   token = "prout";
   version = 0;
 
+
+
   comments = {
     "comments": [{
       "id": 14616576366993,
@@ -158,5 +160,18 @@ export class ZendeskContextMock {
   async setActiveTicket(id:any) {
   }
 
+  //
+  // https://developer.zendesk.com/api-reference/sales-crm/errors/
+  parseError(err:any) {
+    const defaultError={
+      error: "RecordInvalid",
+      description: "Record validation errors",
+      details: {
+        requester: [{
+          description: "Requester: Remo Deplazes is suspended."
+        }]
+      }
+    }
+  }
 
 }
