@@ -18,10 +18,6 @@ import { $zendesk, Context } from './services/ZendeskContext';
 export default class App extends Vue {
 
 
-  query:string | null = null;
-
-  organization: string|null=null;
-
   latest: Context|null = null
 
   mounted(){
@@ -33,8 +29,6 @@ export default class App extends Vue {
       $zendesk.observable().subscribe(async (context:Context)=>{
         // reset state
         this.latest = context;
-        this.query = null;
-        this.organization = this.organization || context.organization || null;        
       });
   }
 

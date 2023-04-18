@@ -147,12 +147,16 @@ export class ZendeskContextMock {
     return this.znedesk$.asObservable();
   }
 
+  async solveTicket(context:any){
+    console.log('---- DBG mock solve ticket')
+  }
+
   async createTicket(status: any) {
     console.log('---- DBG mock save ticket')
   }
 
-  showError(status: number, message:string) {  
-    console.log('---- DBG save show',message);
+  async setActiveTicket(id:any) {
   }
+
 
 }

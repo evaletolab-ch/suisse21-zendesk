@@ -3,8 +3,8 @@
     <form>
       <div class="form-group">
         <label for="comment">Créer un ticket à partir du commentaire</label>
-        <select id="comment"  class="form-control">
-          <option v-for="(comment,index) in comments" :key="index">
+        <select id="comment"  class="form-control" v-model="form.descriptionIdx">
+          <option v-for="(comment,index) in comments" :key="index" :value="index">
             {{ comment.plain_body }}
           </option>
         </select>
@@ -12,8 +12,8 @@
 
       <div class="form-group">
         <label for="app">Renseigner l'application</label>
-        <select id="app"  class="form-control">
-          <option v-for="(app,index) in apps" :key="index">
+        <select id="app"  class="form-control" v-model="form.application">
+          <option v-for="(app,index) in apps" :key="index" :value="index">
             {{ app }}
           </option>
         </select>
@@ -21,20 +21,21 @@
 
       <div class="form-group">
         <label for="">Renseigner le sujet</label>
-        <input type="text" placeholder="Sujet du nouveau ticket" class="form-control" v-model="subject" required aria-describedby="helpBlock"> 
+        <input type="text" placeholder="Sujet du nouveau ticket" class="form-control" v-model="form.subject" required aria-describedby="helpBlock"> 
         <small id="helpBlock" class="form-text text-muted">
           Minimum 20 caractères
         </small>
       </div>
       <div class="form-group">
-        <button type="button" class="btn btn-primary" @click="onDuplicate" :disabled="!subject">Créer</button>
+        <button type="button" class="btn btn-primary" @click="onDuplicate" :disabled="!form.subject||context.error">Créer</button>
       </div>
     </form>
     
-    <div class="alert alert-success hide" role="alert">
-      This is a success alert—check it out!
+    <!-- <a href="#" @click="onOpenTicket">{{ newticket.id }}</a> -->
+    <div class="alert alert-success" role="alert" :class="{ hide:!newticket.id }">
+      Un nouveau ticket a été créé <a href="#" @click="onOpenTicket">{{ newticket.id }}</a>
     </div>
-    <div class="alert alert-danger" role="alert" :class="{hide:!context.error}">
+    <div class="alert alert-danger" role="alert" :class="{ hide:!context.error }">
       {{context.error}}
     </div>    
   </div>
@@ -50,11 +51,22 @@ import { $zendesk, Context } from '../services/ZendeskContext';
 })
 export default class Swiss21Zendesk extends Vue {
 
+  newticket:any = {};
   context: Context|any = {};
-  subject = '';
+  form:any ={
+    id:0,
+    subject:'',
+    application:0,
+    description:null,
+    descriptionIdx:0
+  }
 
   get apps () {
-    return ['app1','app2','app3']
+    const field = this.context.custom_field;
+    if(!field) {
+      return ['Erreur avec le champ'];
+    }
+    return field.custom_field_options.map((option:any) => option.name);
   }
 
   get comments() {
@@ -66,9 +78,11 @@ export default class Swiss21Zendesk extends Vue {
     })
   }
 
+
   async mounted() {
     try{
       this.context = await $zendesk.load();
+      this.form.id = this.context.id;
 
       //
       // emit context
@@ -82,9 +96,23 @@ export default class Swiss21Zendesk extends Vue {
 
 
   async onDuplicate() {
-    //await this.$nextTick();
-    this.$forceUpdate();
-    this.context.error = 'Opps: Not yet implemented';
+    try{
+      const commentIdx = this.form.descriptionIdx;
+      this.form.description = this.context.comments.comments[commentIdx].body;
+      this.newticket = await $zendesk.createTicket(this.form, this.context);
+      await  $zendesk.solveTicket(this.context);
+      setTimeout(()=>this.$forceUpdate(),400);
+      console.log('----DBG create and save ticket',this.newticket);
+    }catch(err:any) {
+      this.context.error = err.message|err.statusText|err;
+      setTimeout(()=>this.$forceUpdate(),400);
+      console.log('----DBG ERROR onDuplicate',err);
+    }
+  }
+
+
+  onOpenTicket() {
+    $zendesk.setActiveTicket(this.newticket.id);
   }
 
 }

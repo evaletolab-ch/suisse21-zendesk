@@ -1,5 +1,7 @@
 import { ReplaySubject } from 'rxjs'
 import { ZendeskContextMock } from './ZendeskContext.mock';
+
+
 //
 // Zendesk is imported from index.html as javascript
 declare const ZAFClient:any;
@@ -7,39 +9,26 @@ declare const ZAFClient:any;
 export interface Context {
   __v: number;
   id: number;
-  uid?: string;
-  name?: string;
-  phone?: string;
-  email?: string;
-  description?: string;
-  error?: string;
-  organization?: string;
-  comments?:any[];
   ticket?:any;
-  applications:string[];
+  comments?:any;
+  requester?:any;
+  custom_field?:any[];
+  error?:string;
 }
 
-//
-// - source : https://developer.zendesk.com/documentation/ticketing/reference-guides/via-object-reference/ 
-export interface Ticket {
-  subject: string;
-  description: string;
-  url:string;
-  source: string;
-  content:string;
-}
 //
 // load zendesk API on runtime load
 const client = ZAFClient.init();
 
 class ZendeskContext {
-  ZENDESK_CUSTOM_APP_SELECT='ticket.customField:custom_field_360004818657';
+  //
+  // this version is only for client.set() call
+  //ZENDESK_CUSTOM_APP_SELECT='ticket.customField:custom_field_360004818657';
+  ZENDESK_CUSTOM_APP_SELECT='360004818657';
   ZENDESK_CUSTOM_TEMPLATE='{{dc.clone_app_text}}';
-  ZENDESK_ORG = 'ticket.organization';
   ZENDESK_ORG_ID = 'ticket.organization_id';
   private version = 1;
   private znedesk$ = new ReplaySubject<Context>(1);
-  private ticket:Ticket|any = {};
 
   // WARNING: the same regexp is used on backend
   $phone = new RegExp(/([0-9]{4}|\+[0-9]{2}|\(0\))?[ /-]?(0?[1-9]{2})\/?.?([0-9]{3}).?([0-9]{2}).?([0-9]{2})/);
@@ -69,28 +58,39 @@ class ZendeskContext {
       // get tocket context
       // custom_field_4835238918685 
       // https://stackoverflow.com/questions/75391573/zendesk-listen-agent-response-event-zaf-client-support-location
-      const ticket = await client.get([
-            'ticket.id',
-            'ticket.description',
-            'ticket.subject', 
-            'ticket.requester.id',
-            'ticket.requester.name',
-            'ticket.requester.email',
-            this.ZENDESK_CUSTOM_APP_SELECT,
-            this.ZENDESK_ORG
-      ]);
+      // 'type', 'subject', 'priority', 'assignee_id', 'group_id', 'custom_fields', 'fields', 'ticket_form_id', 'brand_id'
+      const elems = [
+        'ticket.id',
+        'ticket.requester.id',
+        'ticket.requester.name',
+        'ticket.requester.email',
+        'ticket.group'
+      ]
+      const id = await client.get(elems);
+      const content = await client.request('/api/v2/tickets/'+id['ticket.id']);
+
+      const fields = await client.request('/api/v2/ticket_fields/'+ this.ZENDESK_CUSTOM_APP_SELECT);
 
       const context:Context = {
         __v: this.version,
-        id:ticket['ticket.id'],
-        uid: ticket['ticket.requester.id'],
-        name: ticket['ticket.requester.name'],
-        description: ticket['ticket.description'],
-        email: ticket['ticket.requester.email'],
-        organization: ticket[this.ZENDESK_ORG],
-        applications:ticket[this.ZENDESK_CUSTOM_APP_SELECT],
-        ticket
+        id:id['ticket.id'],
+        ticket:content.ticket,
+        custom_field: fields.ticket_field
       };
+
+      //
+      // force group id
+      context.ticket.group_id = context.ticket.group_id || id['ticket.group'];
+
+      //
+      // create requester
+      if(id['ticket.requester.id'] || id['ticket.requester.name'] || id['ticket.requester.email']) {
+        context.requester = {
+          id:id['ticket.requester.id'],
+          name:id['ticket.requester.name'],
+          email:id['ticket.requester.email']
+        }
+      }
 
 
       //
@@ -98,8 +98,16 @@ class ZendeskContext {
       // https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_comments/#list-comments
       // https://developer.zendesk.com/api-reference/apps/apps-support-api/ticket_sidebar/#comment-object
       context.comments = await client.request(`/api/v2/tickets/${context.id}/comments?sort_order=desc`);
+      context.comments = context.comments || {comments:[]};
 
-      console.log('--- DBG ZendeskContext comment',context.comments);
+      console.log('--- DBG ZendeskContext ticket ',id);
+      console.log('--- DBG ZendeskContext context',context);
+
+      //
+      // verify context of ticket
+      if(content.ticket.status == 'solved'){
+        context.error = 'Impossible de modifier un ticket fermé';
+      }
 
 
       //
@@ -108,9 +116,8 @@ class ZendeskContext {
 
     }catch(err:any) {
       const error = err.message||err;
-      this.showError(err.status,error);
       console.log('----- ERROR',err);
-      return {__v:1,error} as Context;      
+      return {error} as Context;      
     }
   }
 
@@ -125,52 +132,142 @@ class ZendeskContext {
   }
 
   //
+  // comment ticket and solve it
+  async solveTicket(context:any){
+    try{
+      const body = {
+        ticket: {
+          comment: {
+            body: this.ZENDESK_CUSTOM_TEMPLATE,
+            public: true
+          },
+          status: "solved"
+        }
+      }
+  
+      const options = {
+        method:'PUT',
+        url:`/api/v2/tickets/${context.id}`,
+        dataType: "json",
+        data:body
+      }
+      await client.request(options);  
+    }catch(err:any){
+      console.log('----DBG solveTicket',err);
+      throw err;
+    }
+  }
+
+  //
   // https://developer.zendesk.com/api-reference/ticketing/tickets/tickets/#json-format
-  async createTicket(status: any) {
+  async createTicket(form: any, context:any) {
     if(!client) {
       throw "Not a zendesk container";
     }
 
-    console.log('--- DBG save',status);
 
-    const properties = [
-      'ticket.description',
-      'ticket.subject', 
-      'ticket.via.channel',
-      'ticket',
-      this.ZENDESK_CUSTOM_APP_SELECT,
-      this.ZENDESK_ORG
-  ];
+    try{
+      //
+      // create new ticket with essential fields
+      // 'type', 'subject', 'priority', 'assignee_id', 'group_id', 'custom_fields', 'fields', 'ticket_form_id', 'brand_id'
+      // via_followup_source_id
+      const ticket:any = {
+        ticket: {
+          type:context.ticket.type,
+          assignee_id:context.ticket.assignee_id,
+          group_id:context.ticket.group_id,
+          fields:[],
+          tags:context.ticket.tags,
+          ticket_form_id:context.ticket.ticket_form_id,
+          brand_id:context.ticket.brand_id,
+          organisation_id:context.ticket.organisation_id,
+          priority: context.ticket.priority,
+          subject: form.subject,
+          custom_fields:[],
+          description:form.description
+        }
+      }
 
 
-    //
-    // ticket content
-    const ticket:any = await client.get(properties)
-    this.ticket.url = window.location.href;
-    this.ticket.source = ticket['ticket.via.channel'];
-    this.ticket.subject = ticket['ticket.subject'];
-    this.ticket.description = ticket['ticket.description'];
-    this.ticket.content = JSON.stringify(ticket.ticket);
+      //
+      // set the name, id or email of the requester
+      if(context.requester) {
+        ticket.ticket.requester = context.requester;
+      }
 
-    const organization = ticket[this.ZENDESK_ORG] || {};
+      //
+      // validate form 
+      if(form.application>=0) {
+        const values = context.custom_field.custom_field_options.map((option:any) => option.value);
+        const field = context.custom_field.custom_field_options[form.application];
+        values.forEach((value:string) => {
+          const idx = ticket.ticket.tags.indexOf(value);
+          if(idx ==-1) {
+            return;
+          }
+          ticket.ticket.tags.splice(idx, 1);
+        })
+        ticket.ticket.tags.push(field.value);
+        // 
+        // const matched1 = ticket.ticket.custom_fields.findIndex((field:any) => field.id==this.ZENDESK_CUSTOM_APP_SELECT);
+        // if(matched1>-1) {
+        //   ticket.ticket.custom_fields[matched1].value = field.value;
+        // } else {
+        //   ticket.ticket.custom_fields.push({id:this.ZENDESK_CUSTOM_APP_SELECT,value:field.value});
+        // }
+
+        // const matched2 = ticket.ticket.fields.findIndex((field:any) => field.id==this.ZENDESK_CUSTOM_APP_SELECT);
+        // if(matched2>-1) {
+        //   ticket.ticket.fields[matched2].value = field.value;
+        // } else {
+        //   ticket.ticket.fields.push({id:this.ZENDESK_CUSTOM_APP_SELECT,value:field.value});
+        // }
+      }
+
+      console.log(' -- clone ticket.type: ',ticket.ticket.type);
+      console.log(' -- clone ticket.assignee_id: ',ticket.ticket.assignee_id);
+      console.log(' -- clone ticket.group_id: ',ticket.ticket.group_id);
+      console.log(' -- clone ticket.tags: ',ticket.ticket.tags);
+      console.log(' -- clone ticket.ticket_form_id: ',ticket.ticket.ticket_form_id);
+      console.log(' -- clone ticket.brand_id: ',ticket.ticket.brand_id);
+      console.log(' -- clone ticket.organisation_id: ',ticket.ticket.organisation_id);
+      console.log(' -- clone ticket.priority: ',ticket.ticket.priority);
+      console.log(' -- clone ticket.fields: ',ticket.ticket.fields);
+      console.log(' -- clone ticket.custom_fields: ',ticket.ticket.custom_fields);
 
 
+      //
+      // attach content
+      // https://developer.zendesk.com/documentation/ticketing/using-the-zendesk-api/adding-ticket-attachments-with-the-api
 
-    console.log('----DBG create and save ticket',ticket);
-    this.update({ ticket } as Context);  
+      console.log('--- DBG createTicket',ticket);
+      //
+      // ticket content
+      const options = {
+        method:'POST',
+        url:'/api/v2/tickets',
+        dataType: "json",
+        data:ticket
+      }
+      const data = await client.request(options);  
+      return data.ticket;
+
+    }catch(err:any){
+      console.log('----DBG createTicket',err);
+      throw err;
+    }
+
 
   }
 
-  showError(status: number, message:string) {  
-    const $window:any = window
-    const error = {    
-      status: (status||400),    
-      statusText: message 
-    };  
-    // const source = $window.$("#error-template").html();  
-    // const template = $window.Handlebars.compile(source);  
-    // const html = template(error);  
-    // $window.$("#content").html(html);
+
+  //
+  // trigger
+  // action references
+  // https://developer.zendesk.com/documentation/ticketing/reference-guides/actions-reference/
+  // https://developer.zendesk.com/api-reference/apps/apps-support-api/all_locations/#routeto
+  async setActiveTicket(id:any) {
+    await client.invoke('routeTo', 'ticket', id);
   }
 
 }
