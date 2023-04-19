@@ -223,16 +223,18 @@ class ZendeskContext {
         // }
       }
 
-      console.log(' -- clone ticket.type: ',ticket.ticket.type);
-      console.log(' -- clone ticket.assignee_id: ',ticket.ticket.assignee_id);
-      console.log(' -- clone ticket.group_id: ',ticket.ticket.group_id);
-      console.log(' -- clone ticket.tags: ',ticket.ticket.tags);
-      console.log(' -- clone ticket.ticket_form_id: ',ticket.ticket.ticket_form_id);
-      console.log(' -- clone ticket.brand_id: ',ticket.ticket.brand_id);
-      console.log(' -- clone ticket.organisation_id: ',ticket.ticket.organisation_id);
-      console.log(' -- clone ticket.priority: ',ticket.ticket.priority);
-      console.log(' -- clone ticket.fields: ',ticket.ticket.fields);
-      console.log(' -- clone ticket.custom_fields: ',ticket.ticket.custom_fields);
+      console.log(' -- clone * ticket.type: ',ticket.ticket.type);
+      console.log(' -- clone * ticket.assignee_id: ',ticket.ticket.assignee_id);
+      console.log(' -- clone * ticket.group_id: ',ticket.ticket.group_id);
+      console.log(' -- clone * ticket.tags: ',ticket.ticket.tags);
+      console.log(' -- clone * ticket.ticket_form_id: ',ticket.ticket.ticket_form_id);
+      console.log(' -- clone * ticket.brand_id: ',ticket.ticket.brand_id);
+      console.log(' -- clone * ticket.organisation_id: ',ticket.ticket.organisation_id);
+      console.log(' -- clone * ticket.priority: ',ticket.ticket.priority);
+      console.log(' -- clone * ticket.fields: ',ticket.ticket.fields);
+      console.log(' -- clone * ticket.custom_fields: ',ticket.ticket.custom_fields);
+      console.log(' -- clone * ticket.subject: ',ticket.ticket.subject);
+      console.log(' -- clone * ticket.description: ',ticket.ticket.description);
 
 
       //
