@@ -23,19 +23,23 @@ L’objectif du projet est de créer une application zendesk pour simplifier l�
 ## Création d'un nouveau ticket
 Voici la liste des champs zendesk qui sont utilisés pour la création du nouveau ticket:
 
-* ticket.type (parent)
-* ticket.assignee_id (parent)
-* ticket.requester.id (parent)
-* ticket.requester.name (parent)
-* ticket.requester.email (parent)
-* ticket.group_id (parent)
-* ticket.tags (new)
-* ticket.ticket_form_id (parent)
-* ticket.brand_id (parent)
-* ticket.organisation_id (parent)
-* ticket.priority (parent)
-* ticket.fields (new)
-* ticket.custom_fields (new)
+* ticket.type **(parent)**
+* ticket.assignee_id **(parent)**
+* ticket.requester.id **(parent)**
+* ticket.requester.name **(parent)**
+* ticket.requester.email **(parent)**
+* ticket.group_id **(parent)**
+* ticket.tags **(new)**
+* ticket.ticket_form_id **(parent)**
+* ticket.brand_id **(parent)**
+* ticket.organisation_id **(parent)**
+* ticket.priority **(parent)**
+* ticket.fields **(new)**
+* ticket.custom_fields **(new)**
+* ticket.subject **(new)**
+* ticket.description **(selected comment from parent)**
+
+De plus le tag **tocket_cloned** est ajouté de façon à pouvoir générer des raports.
 
 ## Installation
 Après avoir installer l'application depuis le fichier `app-zendesk.zip` il faut configurer les deux options suivantes (avec les bonnes valeurs):
