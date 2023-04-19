@@ -54,6 +54,7 @@ class ZendeskContext {
       // Custom field for Swiss21 Applications support
       // Custom field for message template
       this.ZENDESK_CUSTOM_APP_SELECT = metadata.settings.field_custom_id || this.ZENDESK_CUSTOM_APP_SELECT;
+      this.ZENDESK_CUSTOM_TEMPLATE = metadata.settings.template_custom_id || this.ZENDESK_CUSTOM_TEMPLATE;
 
       //
       // get tocket context
@@ -78,10 +79,6 @@ class ZendeskContext {
         ticket:content.ticket,
         custom_field: fields.ticket_field
       };
-
-      //
-      // force group id
-      context.ticket.group_id = context.ticket.group_id;
 
       //
       // create requester
@@ -209,6 +206,7 @@ class ZendeskContext {
           ticket.ticket.tags.splice(idx, 1);
         })
         ticket.ticket.tags.push(field.value);
+        ticket.ticket.tags.push('ticket_forked');
         // 
         // const matched1 = ticket.ticket.custom_fields.findIndex((field:any) => field.id==this.ZENDESK_CUSTOM_APP_SELECT);
         // if(matched1>-1) {
