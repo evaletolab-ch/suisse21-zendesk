@@ -39,7 +39,7 @@ Voici la liste des champs zendesk qui sont utilisés pour la création du nouvea
 * ticket.subject **(new)**
 * ticket.description **(selected comment from parent)**
 
-De plus le tag **ticket_cloned** est ajouté de façon à pouvoir générer des raports.
+De plus le tag **ticket_forked** est ajouté de façon à pouvoir générer des raports.
 
 ## Installation
 Après avoir installer l'application depuis le fichier `app-zendesk.zip` il faut configurer les deux options suivantes (avec les bonnes valeurs):
