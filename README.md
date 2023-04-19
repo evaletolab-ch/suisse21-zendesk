@@ -44,6 +44,8 @@ De plus le tag **ticket_forked** est ajouté de façon à pouvoir générer des 
 ## Installation
 Après avoir installer l'application depuis le fichier `app-zendesk.zip` il faut configurer les deux options suivantes (avec les bonnes valeurs):
 
+* https://**{{domain}}**.zendesk.com/admin/apps-integrations/apps/support-apps
+
 ![image](https://user-images.githubusercontent.com/1422935/233100673-f2a8aaff-ea92-45a1-ae4d-acd36923bcb5.png)
 
 
