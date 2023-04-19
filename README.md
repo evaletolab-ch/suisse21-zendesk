@@ -20,6 +20,31 @@ L’objectif du projet est de créer une application zendesk pour simplifier l�
 * Si tout a bien fonctionné, le ticket parent est fermé et le client est informé du suivi.
 * Une information visuelle sera présentée à l’Agent (succès ou erreur).
 
+## Création d'un nouveau ticket
+Voici la liste des champs zendesk qui sont utilisés pour la création du nouveau ticket:
+
+* ticket.type (parent)
+* ticket.assignee_id (parent)
+* ticket.requester.id (parent)
+* ticket.requester.name (parent)
+* ticket.requester.email (parent)
+* ticket.group_id (parent)
+* ticket.tags (new)
+* ticket.ticket_form_id (parent)
+* ticket.brand_id (parent)
+* ticket.organisation_id (parent)
+* ticket.priority (parent)
+* ticket.fields (new)
+* ticket.custom_fields (new)
+
+## Installation
+Après avoir installer l'application depuis le fichier `app-zendesk.zip` il faut configurer les deux options suivantes (avec les bonnes valeurs):
+
+![image](https://user-images.githubusercontent.com/1422935/233100673-f2a8aaff-ea92-45a1-ae4d-acd36923bcb5.png)
+
+
+
+
 
 
 
