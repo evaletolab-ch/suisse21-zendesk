@@ -160,6 +160,10 @@ export class ZendeskContextMock {
   async setActiveTicket(id:any) {
   }
 
+  pushNotification(message:string, kind:string) {
+    // tadaaam
+  }
+
   //
   // https://developer.zendesk.com/api-reference/sales-crm/errors/
   parseError(err:any) {

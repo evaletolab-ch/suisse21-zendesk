@@ -8,6 +8,7 @@ declare const ZAFClient:any;
 
 export interface Context {
   __v: number;
+  invalid:boolean;
   id: number;
   ticket?:any;
   comments?:any;
@@ -72,6 +73,7 @@ class ZendeskContext {
 
       const context:Context = {
         __v: this.version,
+        invalid:false,
         id:id['ticket.id'],
         ticket:content.ticket,
         custom_field: fields.ticket_field
@@ -106,6 +108,7 @@ class ZendeskContext {
       // verify context of ticket
       if(content.ticket.status == 'solved'){
         context.error = 'Impossible de modifier un ticket fermé';
+        context.invalid = true;
       }
 
 
@@ -123,7 +126,6 @@ class ZendeskContext {
   update(context: Context) {
     context.__v = ++this.version;
     this.znedesk$.next(context);
-    console.log('----DBG ZendeskContext context',context);
   }
 
   observable() {
@@ -259,6 +261,8 @@ class ZendeskContext {
 
   }
 
+
+
   //
   // trigger
   // action references
@@ -266,6 +270,13 @@ class ZendeskContext {
   // https://developer.zendesk.com/api-reference/apps/apps-support-api/all_locations/#routeto
   async setActiveTicket(id:any) {
     await client.invoke('routeTo', 'ticket', id);
+  }
+
+  //
+  // notify
+  // https://developer.zendesk.com/api-reference/apps/apps-support-api/all_locations/#notify
+  pushNotification(message:string, kind?:string) {
+    client.invoke('notify', message, kind||'alert',6000);
   }
 
   parseError(err:any) {

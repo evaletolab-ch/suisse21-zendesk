@@ -21,13 +21,13 @@
 
       <div class="form-group">
         <label for="">Renseigner le sujet</label>
-        <input type="text" placeholder="Sujet du nouveau ticket" class="form-control" v-model="form.subject" required aria-describedby="helpBlock"> 
+        <input type="text" placeholder="Sujet du nouveau ticket" class="form-control" v-model="form.subject" minlength="15" required aria-describedby="helpBlock"> 
         <small id="helpBlock" class="form-text text-muted">
-          Minimum 20 caractères
+          Minimum 15 caractères
         </small>
       </div>
       <div class="form-group">
-        <button type="button" class="btn btn-primary" @click="onDuplicate" :disabled="!form.subject||context.error">Créer</button>
+        <button type="button" class="btn btn-primary" @click="onDuplicate" :disabled="!isValidSubject||context.invalid">Créer</button>
       </div>
     </form>
     
@@ -78,6 +78,9 @@ export default class Swiss21Zendesk extends Vue {
     })
   }
 
+  get isValidSubject() {
+    return this.form.subject && this.form.subject.length>15;
+  }
 
   async mounted() {
     try{
@@ -102,9 +105,11 @@ export default class Swiss21Zendesk extends Vue {
       this.newticket = await $zendesk.createTicket(this.form, this.context);
       await  $zendesk.solveTicket(this.context);
       setTimeout(()=>this.$forceUpdate(),400);
+      $zendesk.pushNotification('Un nouveau ticket a été créé ' + this.newticket.id,'notice');
       console.log('----DBG create and save ticket',this.newticket);
     }catch(err:any) {
       this.context.error = err.message||err.statusText||err;
+      $zendesk.pushNotification(this.context.error,'error');
       console.log('----DBG ERROR onDuplicate',this.context.error);
       setTimeout(()=>this.$forceUpdate(),400);
     }
